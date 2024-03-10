@@ -1,3 +1,4 @@
+#include<iostream>
 class valueException{};
 class Ising_spin{
     private:
@@ -5,7 +6,7 @@ class Ising_spin{
     public:
         Ising_spin(const int spin_spec=-1):spin(spin_spec){};
         void setvalue(const int value){
-            if(value!=1||value!=-1)
+            if(value!=1&&value!=-1)
                 throw valueException();
             else
                 spin=value;

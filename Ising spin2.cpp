@@ -1,16 +1,22 @@
 #include "Ising system.hpp"
 #include <iostream>
-void main()
-{
+#include <vector>
+int main()
+{   long long list[3];
+    list[0] = 7;
+    list[1] = 77;
+    list[2] = 777;
     Ising_system mysystem = Ising_system(10, -1.0);
-    int list[3];
-    list[1] = 7;
-    list[2] = 77;
-    list[3] = 777;
-    for (int i = 0; i < sizeof(list); i++)
+
+    for (int i = 0; i < 3; i++)
     {
-        mysystem.set_state_by_code(7);
+        mysystem.set_state_by_code(list[i]);
+        std::vector<int> a=mysystem.return_state();
+        for(int j=0;j<10;j++){
+            std::cout<<a[j]<<" ";
+        }
         std::cout << mysystem.eval_energy_1D() << std::endl;
         std::cout << mysystem.eval_mz() << std::endl;
     }
+    return 0;
 }

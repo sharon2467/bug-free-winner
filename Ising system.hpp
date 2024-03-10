@@ -1,6 +1,7 @@
 #include "Ising spin.hpp"
 #include <vector>
 #include <cmath>
+#include <iostream>
 class Ising_system
 {
 private:
@@ -34,11 +35,14 @@ public:
             {
                 spin[i].set_down();
             }
-            int i = 1;
+            int i = 0;
+            
             while (code_rest != 0)
             {
+
                 spin[i].setvalue((code_rest % 2 ? 1 : -1));
                 code_rest = (code_rest - (code_rest % 2)) / 2;
+                i++;
             }
         }
     }

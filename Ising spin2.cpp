@@ -11,11 +11,11 @@ int main()
     for (int i = 0; i < 3; i++)
     {
         mysystem.set_state_by_code(list[i]);
-        std::vector<int> a=mysystem.return_state();
+        std::vector<int> a=mysystem._state();
         for(int j=0;j<10;j++){
             std::cout<<a[j]<<" ";
         }
-        std::cout << mysystem.eval_energy_1D() << std::endl;
+        std::cout << mysystem.eval_energy() << std::endl;
         std::cout << mysystem.eval_mz() << std::endl;
     }
     return 0;

@@ -2,16 +2,20 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+class OutOfSystemBoundException
+{
+};
 class Ising_system
 {
-private:
+
+protected:
     const double J;
     const int n_spins;
     const long long maxrep_state;
     std::vector<Ising_spin> spin;
 
 public:
-    Ising_system(const int n_spins_spec, const double J1) : J(J1), n_spins(n_spins_spec),maxrep_state(static_cast<long long>(std::pow(2, n_spins)) - 1)
+    Ising_system(const int n_spins_spec, const double J1) : J(J1), n_spins(n_spins_spec), maxrep_state(static_cast<long long>(std::pow(2, n_spins)) - 1)
     {
         spin.resize(n_spins);
     };
@@ -26,7 +30,10 @@ public:
     void set_dw_spin(const int site_idx) { spin[site_idx].set_down(); };
     void set_spin(const int site_idx, int s_spec) { spin[site_idx].setvalue(s_spec); };
     void flip_spin(const int site_idx) { spin[site_idx].flip(); };
+    virtual std::vector<int> idx2cod(int idx) { return std::vector<int>{0}; };
+    virtual int cod2idx(std::vector<int>) { return 0; };
     void set_state_by_code(long long rep_state)
+
     {
         int code_rest = rep_state;
         if (rep_state < maxrep_state)
@@ -36,7 +43,7 @@ public:
                 spin[i].set_down();
             }
             int i = 0;
-            
+
             while (code_rest != 0)
             {
 
@@ -46,7 +53,7 @@ public:
             }
         }
     }
-    std::vector<int> return_state() const
+    std::vector<int> _state() const
     {
         std::vector<int> a;
         a.resize(n_spins);
@@ -56,7 +63,14 @@ public:
         }
         return a;
     }
-    long long return_state_code() const
+    int _state(int site_idx) const
+    {
+        if (site_idx < n_spins)
+            return spin[site_idx].readvalue();
+        else
+            throw OutOfSystemBoundException();
+    }
+    long long _state_code() const
     {
         long long code = 0;
         long long multiplier = 1;
@@ -67,6 +81,47 @@ public:
         }
         return code / 2;
     }
+    void set_dim(const int dim)
+    {
+        for (auto &each : spin)
+            each.set_dim(dim);
+    };
+    std::vector<int> _spin_position(int site_idx)
+    {
+        if (site_idx < n_spins)
+            return spin[site_idx]._position();
+        else
+            throw OutOfSystemBoundException();
+    };
+    std::vector<int> _spin_NN(int site_idx)
+    {
+        if (site_idx < n_spins)
+            return spin[site_idx]._NN();
+        else
+            throw OutOfSystemBoundException();
+    };
+    int _spin_NN(int site_idx, int bond_idx)
+    {
+        if (site_idx < n_spins)
+            return spin[site_idx]._NN(bond_idx);
+        else
+            throw OutOfSystemBoundException();
+    };
+    void set_NN(int site_idx, const std::vector<int> NN)
+    {
+        if (site_idx < n_spins)
+            spin[site_idx].set_NN(NN);
+        else
+            throw OutOfSystemBoundException();
+    }
+    void set_position(int site_idx, const std::vector<int> position)
+    {
+        if (site_idx < n_spins)
+            spin[site_idx].set_position(position);
+        else
+            throw OutOfSystemBoundException();
+    }
+
     double eval_mz() const
     {
         double mz = 0;
@@ -77,14 +132,14 @@ public:
         }
         return mz;
     }
-    double eval_energy_1D() const
+    double eval_energy()
     {
         double energy = 0;
-        energy += J * spin[0].readvalue() * spin[n_spins - 1].readvalue();
-        for (int i = 1; i < n_spins; i++)
+        for (int i = 0; i < n_spins; i++)
         {
-            energy += J * spin[i].readvalue() * spin[i - 1].readvalue();
+            for (int j = 0; j < spin[i]._NN().size(); j++)
+                energy = energy + spin[spin[i]._NN(j)].readvalue() * spin[i].readvalue() * J;
         }
-        return energy;
+        return energy/2;
     }
 };

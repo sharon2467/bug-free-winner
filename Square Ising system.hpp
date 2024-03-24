@@ -34,7 +34,7 @@ public:
     ~Square_system(){};
     std::vector<int> idx2cod(int idx) override
     {
-        std::vector<int> a = {idx / system_size[1],idx % system_size[1]};
+        std::vector<int> a = {idx / system_size[1], idx % system_size[1]};
         return a;
     };
     int cod2idx(std::vector<int> cod) override
@@ -65,5 +65,59 @@ public:
             a[j] = b;
         }
         return a;
+    }
+    std::vector<double> mag_sqaure_avg(double Tmin = 0.05, double Tmax = 4, double delta_T = 0.05)
+    {
+        std::vector<double> Tlist = {};
+        for (double i = Tmin; i < Tmax; i += delta_T)
+        {
+            Tlist.push_back(i);
+        }
+        std::vector<double> mag_sq_list(size(Tlist), 0), Zlist(size(Tlist), 0);
+        int s = _state_code();
+        for (int i = 0; i < (maxrep_state+1); i++)
+        {
+            set_state_by_code(i);
+            double ground_energy = n_spins * 2 * J;
+            for (int j = 0; j < size(mag_sq_list); j++)
+            {
+                mag_sq_list[j] += pow(eval_mz(), 2) * exp(-(eval_energy() - ground_energy) / Tlist[j]);
+                Zlist[j] += exp(-(eval_energy() - ground_energy) / Tlist[j]);
+            }
+        }
+        for (int j = 0; j < size(mag_sq_list); j++)
+        {
+            mag_sq_list[j] /= Zlist[j];
+            mag_sq_list[j] /= n_spins ^ 2;
+        }
+        set_state_by_code(s);
+        return mag_sq_list;
+    }
+    std::vector<double> energy_pow_avg(int p,double Tmin = 0.05, double Tmax = 4, double delta_T = 0.05)
+    {
+        std::vector<double> Tlist = {};
+        for (double i = Tmin; i < Tmax; i += delta_T)
+        {
+            Tlist.push_back(i);
+        }
+        std::vector<double> energy_list(size(Tlist), 0), Zlist(size(Tlist), 0);
+        int s = _state_code();
+        for (int i = 0; i < (maxrep_state+1); i++)
+        {
+            set_state_by_code(i);
+            double ground_energy = n_spins * 2 * J;
+            for (int j = 0; j < size(energy_list); j++)
+            {
+                energy_list[j] +=pow(eval_energy(),p) * exp(-(eval_energy() - ground_energy) / Tlist[j]);
+                Zlist[j] += exp(-(eval_energy() - ground_energy) / Tlist[j]);
+            }
+        }
+        for (int j = 0; j < size(energy_list); j++)
+        {
+            energy_list[j] /= Zlist[j];
+            energy_list[j] /= n_spins;
+        }
+        set_state_by_code(s);
+        return energy_list;
     }
 };

@@ -142,4 +142,5 @@ public:
         }
         return energy/2;
     }
+
 };

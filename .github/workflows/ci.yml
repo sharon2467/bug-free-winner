@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Install dependencies
+        run: |
+          # Add your dependency installation commands here
+
+      - name: Build project
+        run: |
+          {
+            "version": "2.0.0",
+            "tasks": [
+              {
+                "label": "Build",
+                "type": "shell",
+                "command": "npm run build",
+                "group": {
+                  "kind": "build",
+                  "isDefault": true
+                }
+              }
+            ]
+          }
+
+      - name: Run tests
+        run: |
+          for file in ./build/*; do
+            if [[ -x "$file" ]]; then
+              "$file"
+            fi
+          done

@@ -17,16 +17,19 @@ int main()
         Tlist.push_back(i);
     }
     write_in_file(f, Tlist);
-    for (int i = 1; i < 5; i++)
+    for (int i = 1; i < 6; i++)
     {
 
         Square_system a = Square_system(std::vector<int>{i, i}, -1);
-        std::vector<double> e = a.energy_pow_avg(1), e2 = a.energy_pow_avg(2),
-                            m2 = a.mag_sqaure_avg();
+        std::vector<double> e , e2,m2 ;
+        std::vector<std::vector<double>> result=a.intergrated();
+        e=result[1];
+        e2=result[2];
+        m2=result[0];
         std::vector<double> c(size(Tlist), 0);
         for (int j = 0; j < size(Tlist); j++)
         {
-            c[j] = (e2[j] - pow(e[j], 2)) / pow(Tlist[j], 2);
+            c[j] = (e2[j]*a._n_spins() - pow(e[j]*a._n_spins(), 2)) / pow(Tlist[j], 2)/a._n_spins();
         }
 
         // 检查文件是否成功打开

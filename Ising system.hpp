@@ -36,7 +36,7 @@ public:
 
     {
         int code_rest = rep_state;
-        if (rep_state < maxrep_state)
+        if (rep_state <= maxrep_state)
         {
             for (int i = 0; i < n_spins; i++)
             {

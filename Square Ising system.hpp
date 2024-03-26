@@ -75,25 +75,25 @@ public:
         }
         std::vector<double> mag_sq_list(size(Tlist), 0), Zlist(size(Tlist), 0);
         int s = _state_code();
-        for (int i = 0; i < (maxrep_state+1); i++)
+        for (int i = 0; i < (maxrep_state + 1) / 2; i++)
         {
             set_state_by_code(i);
             double ground_energy = n_spins * 2 * J;
-            for (int j = 0; j < size(mag_sq_list); j++)
+            for (int j = 0; j < size(mag_sq_list) + 1; j++)
             {
                 mag_sq_list[j] += pow(eval_mz(), 2) * exp(-(eval_energy() - ground_energy) / Tlist[j]);
                 Zlist[j] += exp(-(eval_energy() - ground_energy) / Tlist[j]);
             }
         }
-        for (int j = 0; j < size(mag_sq_list); j++)
+        for (int j = 0; j < size(mag_sq_list) + 1; j++)
         {
             mag_sq_list[j] /= Zlist[j];
-            mag_sq_list[j] /= n_spins ^ 2;
+            mag_sq_list[j] /= pow(n_spins, 2);
         }
         set_state_by_code(s);
         return mag_sq_list;
     }
-    std::vector<double> energy_pow_avg(int p,double Tmin = 0.05, double Tmax = 4, double delta_T = 0.05)
+    std::vector<double> energy_pow_avg(int p, double Tmin = 0.05, double Tmax = 4, double delta_T = 0.05)
     {
         std::vector<double> Tlist = {};
         for (double i = Tmin; i < Tmax; i += delta_T)
@@ -102,22 +102,98 @@ public:
         }
         std::vector<double> energy_list(size(Tlist), 0), Zlist(size(Tlist), 0);
         int s = _state_code();
-        for (int i = 0; i < (maxrep_state+1); i++)
+        for (int i = 0; i < (maxrep_state + 1) / 2; i++)
         {
             set_state_by_code(i);
             double ground_energy = n_spins * 2 * J;
-            for (int j = 0; j < size(energy_list); j++)
+            for (int j = 0; j < size(energy_list) + 1; j++)
             {
-                energy_list[j] +=pow(eval_energy(),p) * exp(-(eval_energy() - ground_energy) / Tlist[j]);
+                energy_list[j] += pow(eval_energy(), p) * exp(-(eval_energy() - ground_energy) / Tlist[j]);
                 Zlist[j] += exp(-(eval_energy() - ground_energy) / Tlist[j]);
             }
         }
-        for (int j = 0; j < size(energy_list); j++)
+        for (int j = 0; j < size(energy_list) + 1; j++)
         {
             energy_list[j] /= Zlist[j];
             energy_list[j] /= n_spins;
         }
         set_state_by_code(s);
         return energy_list;
+    }
+    std::vector<std::vector<double>> intergrated(double Tmin = 0.05, double Tmax = 4, double delta_T = 0.05)
+    {
+        std::vector<double> Tlist = {};
+        for (double i = Tmin; i < Tmax; i += delta_T)
+        {
+            Tlist.push_back(i);
+        }
+        std::vector<double> mag_sq_list(size(Tlist), 0), energy_list(size(Tlist), 0), energy_list2(size(Tlist), 0), Zlist(size(Tlist), 0);
+        int s = _state_code();
+        int energy, mz, previous_energy, previous_mz;
+        int ground_energy = n_spins * 2 * J;
+        int state;
+        for (int i = 0; i < (maxrep_state + 1) / 2; i++)
+        {
+
+            if (i == 0)
+            {
+                set_state_by_code(i);
+                energy = eval_energy();
+                mz = eval_mz();
+            }
+            else if (i != 0)
+            {
+                state = which_state_to_change(i);
+                mz = previous_mz - 2 * J * spin[state].readvalue();
+                int energy_changed = 0;
+                for (int j = 0; j < 4; j++)
+                    energy_changed = energy_changed - spin[spin[state]._NN(j)].readvalue() * spin[state].readvalue() * J;
+                energy = previous_energy + energy_changed * 2;
+                flip_spin(state);
+            }                
+            previous_energy = energy;
+            previous_mz = mz;
+
+            for (int j = 0; j < size(energy_list) + 1; j++)
+            {
+
+                energy_list[j] += energy * exp(-(energy - ground_energy) / Tlist[j]);
+                mag_sq_list[j] += pow(mz, 2) * exp(-(energy - ground_energy) / Tlist[j]);
+                energy_list2[j] += pow(energy, 2) * exp(-(energy - ground_energy) / Tlist[j]);
+                Zlist[j] += exp(-(energy - ground_energy) / Tlist[j]);
+            }
+        }
+        for (int j = 0; j < size(energy_list) + 1; j++)
+        {
+            mag_sq_list[j] /= Zlist[j];
+            mag_sq_list[j] /= pow(n_spins, 2);
+            energy_list[j] /= Zlist[j];
+            energy_list[j] /= n_spins;
+            energy_list2[j] /= Zlist[j];
+            energy_list2[j] /= n_spins;
+        }
+        set_state_by_code(s);
+        std::vector<std::vector<double>> a;
+        a.push_back(mag_sq_list);
+        a.push_back(energy_list);
+        a.push_back(energy_list2);
+        return a;
+    }
+    int which_state_to_change(int state_idx)
+    {
+        int i = 0;
+        int divisor = 2;
+        while (true)
+        {
+            if (state_idx % divisor == (divisor / 2))
+            {
+                return i;
+            }
+            else
+            {
+                i++;
+                divisor *= 2;
+            }
+        }
     }
 };

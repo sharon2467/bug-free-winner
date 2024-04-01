@@ -20,7 +20,7 @@ jobs:
 
     - name: Compile and Run
       run: |
-        cd source code
+        cd "source code"
         for file in *.cpp; do
           filename=$(basename "$file" .cpp)
           g++ -o "../build/$filename" "$file"

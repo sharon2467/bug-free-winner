@@ -1,10 +1,7 @@
-name: CI
+name: C++ Build and Run
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -13,34 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        
-      - name: Install dependencies
-        run: |
-          # Add your dependency installation commands here
+    - uses: actions/checkout@v2
 
-      - name: Build project
-        run: |
-          {
-            "version": "2.0.0",
-            "tasks": [
-              {
-                "label": "Build",
-                "type": "shell",
-                "command": "npm run build",
-                "group": {
-                  "kind": "build",
-                  "isDefault": true
-                }
-              }
-            ]
-          }
+    - name: Install g++
+      run: sudo apt-get install -y g++
 
-      - name: Run tests
-        run: |
-          for file in ./build/*; do
-            if [[ -x "$file" ]]; then
-              "$file"
-            fi
-          done
+    - name: Create build directory
+      run: mkdir build
+
+    - name: Compile and Run
+      run: |
+        cd source code
+        for file in *.cpp; do
+          filename=$(basename "$file" .cpp)
+          g++ -o "../build/$filename" "$file"
+          "../build/$filename"
+        done
